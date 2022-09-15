@@ -1,25 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from 'react'
+import './App.css'
+import { Item } from './types'
+import { DownshiftCombobox } from './DownshiftCombobox'
+import { HeadlessUiCombobox } from './HeadlessUiCombobox'
+
 
 function App() {
+  const [search, setSearch] = React.useState<string>('');
+  const [apis, setApis] = React.useState<Item[]>([]);
+  const [selected, setSelected] = React.useState<Item | null>(null);
+  useEffect(() => {
+    if (search) {
+      fetch(`https://api.publicapis.org/entries?title=${search}`)
+        .then(response => response.json())
+        .then(data => setApis(data.entries ? data.entries.slice(0, 3) : []))
+    } else {
+      setApis([])
+    }
+  }, [search])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <div><input type="text" value={search} onChange={e => setSearch(e.target.value)}/></div>
+      <div>Selected: {(selected === undefined || selected === null) ? 'Nothing' : selected.API}</div>
+      <div>
+        <h1>Downshift</h1>
+        <DownshiftCombobox search={search} setSearch={setSearch} onSelect={setSelected} apis={apis}/>
+      </div>
+      <div>
+        <h1>HeadlessUI</h1>
+        <HeadlessUiCombobox search={search} setSearch={setSearch} onSelect={setSelected} apis={apis}/>
+      </div>
+      {/*<div>*/}
+      {/*  <h1>Plain</h1>*/}
+      {/*  <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}/>*/}
+      {/*  <ul>{apis.slice(0, 3).map(u => <li>{u.API}</li>)}</ul>*/}
+      {/*</div>*/}
+    </>
   );
 }
 
